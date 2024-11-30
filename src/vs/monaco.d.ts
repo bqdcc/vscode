@@ -7018,6 +7018,7 @@ declare namespace monaco.languages {
 		label: string;
 		detail?: string;
 		description?: string;
+		type?: string;
 	}
 
 	export enum CompletionItemTag {

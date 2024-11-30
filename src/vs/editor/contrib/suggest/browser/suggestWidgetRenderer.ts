@@ -70,8 +70,8 @@ export interface ISuggestionTemplateData {
 	 * < ------------- left ------------ >     < --- right -- >
 	 * <icon><label><signature><qualifier>     <type><readmore>
 	 */
-	readonly left: HTMLElement;
-	readonly right: HTMLElement;
+	readonly top: HTMLElement;
+	readonly bottom: HTMLElement;
 
 	readonly icon: HTMLElement;
 	readonly colorspan: HTMLElement;
@@ -79,6 +79,8 @@ export interface ISuggestionTemplateData {
 	readonly iconContainer: HTMLElement;
 	readonly parametersLabel: HTMLElement;
 	readonly qualifierLabel: HTMLElement;
+	readonly typeContainer: HTMLElement;
+	readonly typeLabel: HTMLElement;
 	/**
 	 * Showing either `CompletionItem#details` or `CompletionItemLabel#type`
 	 */
@@ -120,17 +122,23 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
 		const main = append(text, $('.main'));
 
 		const iconContainer = append(main, $('.icon-label.codicon'));
-		const left = append(main, $('span.left'));
-		const right = append(main, $('span.right'));
+		const textContainer = append(main, $('div.text-container'));
+		const top = append(textContainer, $('div.top'));
+		const bottom = append(textContainer, $('div.bottom'));
 
-		const iconLabel = new IconLabel(left, { supportHighlights: true, supportIcons: true });
+		// const topLeft = append(textContainer, $('div.topLeft'));
+		// const topRight = append(textContainer, $('div.topRight'));
+
+		const iconLabel = new IconLabel(top, { supportHighlights: true, supportIcons: true });
 		disposables.add(iconLabel);
 
-		const parametersLabel = append(left, $('span.signature-label'));
-		const qualifierLabel = append(left, $('span.qualifier-label'));
-		const detailsLabel = append(right, $('span.details-label'));
+		const parametersLabel = append(top, $('span.signature-label'));
+		const qualifierLabel = append(top, $('span.qualifier-label'));
+		const detailsLabel = append(bottom, $('span.details-label'));
 
-		const readMore = append(right, $('span.readMore' + ThemeIcon.asCSSSelector(suggestMoreInfoIcon)));
+		const typeContainer = append(main, $('div.type-container'));
+		const typeLabel = append(typeContainer, $('span.type-label'));
+		const readMore = append(typeContainer, $('span.readMore' + ThemeIcon.asCSSSelector(suggestMoreInfoIcon)));
 		readMore.title = nls.localize('readMore', "Read More");
 
 		const configureFont = () => {
@@ -151,19 +159,17 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
 			root.style.letterSpacing = letterSpacingPx;
 			main.style.fontFamily = fontFamily;
 			main.style.fontFeatureSettings = fontFeatureSettings;
-			main.style.lineHeight = lineHeightPx;
+			// main.style.lineHeight = lineHeightPx;
 			icon.style.height = lineHeightPx;
 			icon.style.width = lineHeightPx;
-			readMore.style.height = lineHeightPx;
-			readMore.style.width = lineHeightPx;
+			// readMore.style.height = lineHeightPx;
+			// readMore.style.width = lineHeightPx;
 		};
 
-		return { root, left, right, icon, colorspan, iconLabel, iconContainer, parametersLabel, qualifierLabel, detailsLabel, readMore, disposables, configureFont };
+		return { root, top, bottom, icon, colorspan, iconLabel, iconContainer, parametersLabel, qualifierLabel, detailsLabel, typeContainer, typeLabel, readMore, disposables, configureFont };
 	}
 
 	renderElement(element: CompletionItem, index: number, data: ISuggestionTemplateData): void {
-
-
 		data.configureFont();
 
 		const { completion } = element;
@@ -217,7 +223,25 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
 			data.root.classList.add('string-label');
 		} else {
 			data.parametersLabel.textContent = stripNewLines(completion.label.detail || '');
-			data.detailsLabel.textContent = stripNewLines(completion.label.description || '');
+			const description = stripNewLines(completion.label.description || '');
+
+			if (!!description) {
+				data.detailsLabel.textContent = stripNewLines(description || '');
+				data.top.style.minHeight = '';
+				data.bottom.style.display = '';
+			} else {
+				data.detailsLabel.textContent = "";
+				data.top.style.minHeight = "100%";
+				data.bottom.style.display = 'none';
+			}
+
+			const type = stripNewLines(completion.label.type || '');
+			if (!!type) {
+				data.typeLabel.textContent = type;
+			} else {
+				data.typeLabel.textContent = '';
+			}
+
 			data.root.classList.remove('string-label');
 		}
 
@@ -228,7 +252,7 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
 		}
 
 		if (canExpandCompletionItem(element)) {
-			data.right.classList.add('can-expand-details');
+			data.typeContainer.classList.add('can-expand-details');
 			show(data.readMore);
 			data.readMore.onmousedown = e => {
 				e.stopPropagation();
@@ -240,7 +264,7 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
 				this._onDidToggleDetails.fire();
 			};
 		} else {
-			data.right.classList.remove('can-expand-details');
+			data.typeContainer.classList.remove('can-expand-details');
 			hide(data.readMore);
 			data.readMore.onmousedown = null;
 			data.readMore.onclick = null;

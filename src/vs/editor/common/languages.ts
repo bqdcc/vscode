@@ -469,6 +469,7 @@ export interface CompletionItemLabel {
 	label: string;
 	detail?: string;
 	description?: string;
+	type?: string;
 }
 
 export const enum CompletionItemTag {

@@ -6199,7 +6199,7 @@ export const EditorOptions = {
 	)),
 	suggestLineHeight: register(new EditorIntOption(
 		EditorOption.suggestLineHeight, 'suggestLineHeight',
-		0, 0, 1000,
+		38, 0, 1000,
 		{ markdownDescription: nls.localize('suggestLineHeight', "Line height for the suggest widget. When set to {0}, the value of {1} is used. The minimum value is 8.", '`0`', '`#editor.lineHeight#`') }
 	)),
 	suggestOnTriggerCharacters: register(new EditorBooleanOption(
